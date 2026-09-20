@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Cidadao {
+  idCidadao Int    @id @default(autoincrement())
+  nome      String @db.VarChar(100)
+  email     String @unique @db.VarChar(100)
+  senha     String @db.VarChar(255)
+  telefone  String? @db.VarChar(20)
+
+  denuncias Denuncia[]
+
+  @@map("Cidadao")
+}
+
+model Gestao {
+  idGestao Int    @id @default(autoincrement())
+  nome     String @db.VarChar(100)
+  email    String @unique @db.VarChar(100)
+  senha    String @db.VarChar(255)
+
+  denuncias Denuncia[]
+
+  @@map("Gestao")
+}
+
+model Denuncia {
+  idDenuncia  Int      @id @default(autoincrement())
+  descricao   String   @db.Text
+  categoria   String?  @db.VarChar(50)
+  localizacao String   @db.VarChar(255)
+  data        DateTime @default(now())
+  status      String   @default("Pendente") @db.VarChar(30)
+  prioridade  String?  @db.VarChar(20)
+  midia       Json?
+
+  Cidadao_idCidadao Int
+  cidadao           Cidadao @relation(fields: [Cidadao_idCidadao], references: [idCidadao], onDelete: Cascade)
+
+  Gestao_idGestao Int?
+  gestao          Gestao? @relation(fields: [Gestao_idGestao], references: [idGestao])
+
+  @@map("Denuncia")
+}

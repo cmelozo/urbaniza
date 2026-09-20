@@ -1,0 +1,131 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: linear-gradient(135deg, var(--roxo-escuro) 0%, var(--roxo) 45%, var(--rosa) 100%);
+  padding: 24px;
+}
+
+.login-hero {
+  color: #fff;
+  max-width: 380px;
+  padding: 40px;
+  text-align: left;
+}
+
+.login-hero h1 {
+  font-size: 2.6rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.login-hero p {
+  font-size: 1.05rem;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 25px 60px rgba(40, 10, 70, 0.35);
+  padding: 36px 32px;
+  text-align: left;
+}
+
+.login-card h2 {
+  color: var(--roxo-escuro);
+  font-size: 1.5rem;
+  margin-bottom: 6px;
+}
+
+.login-subtitulo {
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.login-form input {
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  outline: none;
+  color: var(--texto);
+}
+
+.login-form input:focus {
+  border-color: var(--roxo-claro);
+  box-shadow: 0 0 0 3px rgba(163, 92, 224, 0.15);
+}
+
+.login-form button {
+  margin-top: 8px;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--roxo) 0%, var(--roxo-escuro) 100%);
+  transition: opacity 0.2s ease;
+}
+
+.login-form button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.login-erro {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--erro-bg);
+  color: var(--erro-texto);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.login-rodape {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+
+.login-rodape a {
+  color: var(--roxo);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+@media (max-width: 860px) {
+  .login-page {
+    flex-direction: column;
+  }
+
+  .login-hero {
+    text-align: center;
+    max-width: 460px;
+  }
+}

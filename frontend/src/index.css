@@ -1,0 +1,34 @@
+:root {
+  --roxo: #6b1fb3;
+  --roxo-escuro: #4a1687;
+  --roxo-claro: #a35ce0;
+  --rosa: #d94fc0;
+  --fundo-app: #f5f3fa;
+  --texto: #23202b;
+  --texto-suave: #6f6a7d;
+  --borda: #e2ddef;
+  --sucesso-bg: #eafaf1;
+  --sucesso-texto: #196b3d;
+  --erro-bg: #fdecec;
+  --erro-texto: #b42318;
+
+  font: 15px/1.5 system-ui, "Segoe UI", Roboto, sans-serif;
+  color: var(--texto);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--fundo-app);
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}

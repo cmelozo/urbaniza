@@ -1,0 +1,137 @@
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  background: var(--fundo-app);
+}
+
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, var(--roxo-escuro) 0%, #2b0f52 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 18px;
+}
+
+.sidebar-topo {
+  margin-bottom: 32px;
+}
+
+.sidebar-logo {
+  display: block;
+  font-weight: 800;
+  font-size: 1.15rem;
+  margin-bottom: 18px;
+}
+
+.sidebar-usuario {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--rosa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-link {
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.sidebar-link.active {
+  background: #fff;
+  color: var(--roxo-escuro);
+}
+
+.sidebar-ajuda {
+  margin-top: auto;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 0.82rem;
+}
+
+.ajuda-titulo {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.ajuda-texto {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.sidebar-sair {
+  margin-top: 14px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.sidebar-sair:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.conteudo {
+  flex: 1;
+  min-width: 0;
+  padding: 36px 44px;
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    padding: 14px 16px;
+  }
+
+  .sidebar-topo,
+  .sidebar-ajuda,
+  .sidebar-sair {
+    display: none;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    gap: 4px;
+  }
+
+  .conteudo {
+    padding: 24px;
+  }
+}
