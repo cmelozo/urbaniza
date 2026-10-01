@@ -129,3 +129,35 @@
     max-width: 460px;
   }
 }
+.perfil-seletor {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 20px;
+  background: #f3eefa;
+  border-radius: 12px;
+}
+
+.perfil-seletor button {
+  flex: 1;
+  border: none;
+  border-radius: 9px;
+  padding: 10px 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--texto-suave);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.perfil-seletor button.ativo {
+  background: #fff;
+  color: var(--roxo-escuro);
+  box-shadow: 0 2px 8px rgba(40, 10, 70, 0.12);
+}
+
+.perfil-seletor button:focus-visible {
+  outline: 2px solid var(--roxo-claro);
+  outline-offset: 2px;
+}

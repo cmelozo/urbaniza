@@ -13,6 +13,7 @@ const CORES_STATUS = {
 
 function MinhasDenuncias() {
   const sessao = getUsuarioLogado();
+  const ehGestao = sessao?.tipo === "gestao";
   const [denuncias, setDenuncias] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
@@ -21,7 +22,8 @@ function MinhasDenuncias() {
     async function carregar() {
       try {
         const idCidadao = sessao?.usuario?.idCidadao;
-        const response = await fetch(`${API_URL}?cidadaoId=${idCidadao}`);
+        const url = ehGestao ? API_URL : `${API_URL}?cidadaoId=${idCidadao}`;
+        const response = await fetch(url);
         const data = await response.json();
 
         if (!response.ok) {
@@ -37,25 +39,35 @@ function MinhasDenuncias() {
     }
 
     carregar();
-  }, [sessao?.usuario?.idCidadao]);
+  }, [sessao?.usuario?.idCidadao, ehGestao]);
 
   return (
     <div className="inicio-page">
       <div className="inicio-header">
         <div>
-          <h1>Minhas denúncias</h1>
-          <p>Acompanhe o andamento das denúncias que você registrou.</p>
+          <h1>{ehGestao ? "Denúncias do município" : "Minhas denúncias"}</h1>
+          <p>
+            {ehGestao
+              ? "Veja as denúncias registradas pelos cidadãos."
+              : "Acompanhe o andamento das denúncias que você registrou."}
+          </p>
         </div>
-        <Link className="botao-nova" to="/denuncias/nova">
-          + Nova denúncia
-        </Link>
+        {!ehGestao && (
+          <Link className="botao-nova" to="/denuncias/nova">
+            + Nova denúncia
+          </Link>
+        )}
       </div>
 
       {carregando && <p className="status-msg">Carregando...</p>}
       {erro && <p className="status-msg erro">{erro}</p>}
 
       {!carregando && !erro && denuncias.length === 0 && (
-        <p className="status-msg">Você ainda não registrou nenhuma denúncia.</p>
+        <p className="status-msg">
+          {ehGestao
+            ? "Nenhuma denúncia registrada até o momento."
+            : "Você ainda não registrou nenhuma denúncia."}
+        </p>
       )}
 
       <div className="denuncia-lista">
@@ -69,6 +81,9 @@ function MinhasDenuncias() {
             </div>
             <p className="denuncia-descricao">{denuncia.descricao}</p>
             <p className="denuncia-local">📍 {denuncia.localizacao}</p>
+            {ehGestao && denuncia.cidadao?.nome && (
+              <p className="denuncia-data">Enviada por {denuncia.cidadao.nome}</p>
+            )}
             <p className="denuncia-data">
               {new Date(denuncia.data).toLocaleDateString("pt-BR")}
             </p>

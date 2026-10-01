@@ -7,6 +7,7 @@ function SidebarLayout({ children }) {
   const sessao = getUsuarioLogado();
   const nome = sessao?.usuario?.nome || "Usuário";
   const inicial = nome.charAt(0).toUpperCase();
+  const ehGestao = sessao?.tipo === "gestao";
 
   return (
     <div className="app-shell">
@@ -20,15 +21,19 @@ function SidebarLayout({ children }) {
         </div>
 
         <nav className="sidebar-nav">
-          <NavLink to="/denuncias/nova" className="sidebar-link">
-            Nova denúncia
-          </NavLink>
+          {!ehGestao && (
+            <NavLink to="/denuncias/nova" className="sidebar-link">
+              Nova denúncia
+            </NavLink>
+          )}
           <NavLink to="/denuncias" end className="sidebar-link">
             Início
           </NavLink>
-          <NavLink to="/perfil" className="sidebar-link">
-            Meu perfil
-          </NavLink>
+          {!ehGestao && (
+            <NavLink to="/perfil" className="sidebar-link">
+              Meu perfil
+            </NavLink>
+          )}
         </nav>
 
         <div className="sidebar-ajuda">

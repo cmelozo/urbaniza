@@ -51,11 +51,11 @@ function Login() {
 
       <section className="login-card">
         <h2>Acesse sua conta</h2>
-        <p className="login-subtitulo">Entre com seu usuário e senha para continuar</p>
+        <p className="login-subtitulo">Cidadãos e gestão municipal entram por aqui</p>
 
         <form onSubmit={handleSubmit} className="login-form">
           <label>
-            Usuário
+            E-mail
             <input
               type="email"
               name="email"

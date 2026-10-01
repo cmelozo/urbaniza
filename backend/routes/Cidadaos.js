@@ -48,6 +48,11 @@ router.post("/", async function (req, res) {
       });
     }
 
+    const emailEmUso = await prisma.gestao.findUnique({ where: { email } });
+    if (emailEmUso) {
+      return res.status(409).json({ error: "Já existe uma conta com esse e-mail." });
+    }
+
     const cidadao = await prisma.cidadao.create({
       data: { nome, email, senha, telefone },
     });
