@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { api } from "../../api";
 import { getUsuarioLogado, salvarUsuarioLogado } from "../../auth";
 import "./MeuPerfil.css";
-
-const API_URL = "http://localhost:3000/Cidadaos";
 
 function MeuPerfil() {
   const sessao = getUsuarioLogado();
@@ -10,11 +9,19 @@ function MeuPerfil() {
     nome: sessao?.usuario?.nome || "",
     email: sessao?.usuario?.email || "",
     telefone: sessao?.usuario?.telefone || "",
+    cidadeId: sessao?.usuario?.Cidade_idCidade ? String(sessao.usuario.Cidade_idCidade) : "",
     senha: "",
   });
+  const [cidades, setCidades] = useState([]);
   const [salvando, setSalvando] = useState(false);
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
+
+  useEffect(() => {
+    api("/Cidades")
+      .then(setCidades)
+      .catch(() => setErro("Não foi possível carregar a lista de cidades."));
+  }, []);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -28,18 +35,13 @@ function MeuPerfil() {
     setSalvando(true);
 
     try {
-      const response = await fetch(`${API_URL}/${sessao.usuario.idCidadao}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const data = await response.json();
+      const corpo = { ...form };
+      if (!corpo.cidadeId) delete corpo.cidadeId;
 
-      if (!response.ok) {
-        throw new Error(data.error || "Não foi possível atualizar o perfil.");
-      }
+      const data = await api(`/Cidadaos/${sessao.usuario.idCidadao}`, { method: "PUT", body: corpo });
 
-      salvarUsuarioLogado("cidadao", data);
+      // o token novo carrega a cidade atualizada
+      salvarUsuarioLogado("cidadao", data.usuario, data.token);
       setMensagem("Perfil atualizado com sucesso!");
       setForm((prev) => ({ ...prev, senha: "" }));
     } catch (error) {
@@ -70,6 +72,20 @@ function MeuPerfil() {
         <label>
           Telefone
           <input name="telefone" value={form.telefone} onChange={handleChange} />
+        </label>
+        <label>
+          Cidade
+          <select name="cidadeId" value={form.cidadeId} onChange={handleChange} required>
+            <option value="">Selecione sua cidade</option>
+            {cidades.map((cidade) => (
+              <option key={cidade.idCidade} value={cidade.idCidade}>
+                {cidade.nome} - {cidade.uf}
+              </option>
+            ))}
+          </select>
+          <small className="perfil-ajuda">
+            Você vê e curte as denúncias da cidade escolhida, e suas novas denúncias vão para a prefeitura dela.
+          </small>
         </label>
         <label>
           Nova senha

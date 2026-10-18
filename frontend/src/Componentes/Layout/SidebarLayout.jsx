@@ -18,6 +18,9 @@ function SidebarLayout({ children }) {
             <span className="avatar">{inicial}</span>
             <span>{nome.split(" ")[0]}</span>
           </div>
+          {sessao?.usuario?.cidade && (
+            <p className="sidebar-cidade">{sessao.usuario.cidade.nome} - {sessao.usuario.cidade.uf}</p>
+          )}
         </div>
 
         <nav className="sidebar-nav">
@@ -27,8 +30,13 @@ function SidebarLayout({ children }) {
             </NavLink>
           )}
           <NavLink to="/denuncias" end className="sidebar-link">
-            Início
+            {ehGestao ? "Denúncias" : "Início"}
           </NavLink>
+          {!ehGestao && (
+            <NavLink to="/denuncias/minhas" className="sidebar-link">
+              Minhas denúncias
+            </NavLink>
+          )}
           {!ehGestao && (
             <NavLink to="/perfil" className="sidebar-link">
               Meu perfil

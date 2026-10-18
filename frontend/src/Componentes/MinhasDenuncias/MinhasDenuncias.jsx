@@ -1,36 +1,24 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { api } from "../../api";
 import { getUsuarioLogado } from "../../auth";
+import { CLASSE_PRIORIDADE, CLASSE_STATUS, formatarData, urlImagem } from "../Denuncias/rotulos";
 import "./MinhasDenuncias.css";
+import "../Denuncias/Denuncias.css";
 
-const API_URL = "http://localhost:3000/Denuncias";
-
-const CORES_STATUS = {
-  Pendente: "status-pendente",
-  "Em análise": "status-analise",
-  Resolvida: "status-resolvida",
-};
-
+// Denúncias que o próprio cidadão registrou, com o andamento dado pela prefeitura.
 function MinhasDenuncias() {
-  const sessao = getUsuarioLogado();
-  const ehGestao = sessao?.tipo === "gestao";
+  const semCidade = !getUsuarioLogado()?.usuario?.Cidade_idCidade;
   const [denuncias, setDenuncias] = useState([]);
-  const [carregando, setCarregando] = useState(true);
+  const [carregando, setCarregando] = useState(!semCidade);
   const [erro, setErro] = useState("");
 
   useEffect(() => {
+    if (semCidade) return;
+
     async function carregar() {
       try {
-        const idCidadao = sessao?.usuario?.idCidadao;
-        const url = ehGestao ? API_URL : `${API_URL}?cidadaoId=${idCidadao}`;
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Não foi possível carregar suas denúncias.");
-        }
-
-        setDenuncias(data);
+        setDenuncias(await api("/Denuncias?mine=1"));
       } catch (error) {
         setErro(error.message);
       } finally {
@@ -39,56 +27,63 @@ function MinhasDenuncias() {
     }
 
     carregar();
-  }, [sessao?.usuario?.idCidadao, ehGestao]);
+  }, [semCidade]);
 
   return (
     <div className="inicio-page">
       <div className="inicio-header">
         <div>
-          <h1>{ehGestao ? "Denúncias do município" : "Minhas denúncias"}</h1>
-          <p>
-            {ehGestao
-              ? "Veja as denúncias registradas pelos cidadãos."
-              : "Acompanhe o andamento das denúncias que você registrou."}
-          </p>
+          <h1>Minhas denúncias</h1>
+          <p>Acompanhe o andamento das denúncias que você registrou.</p>
         </div>
-        {!ehGestao && (
-          <Link className="botao-nova" to="/denuncias/nova">
-            + Nova denúncia
-          </Link>
-        )}
+        <Link className="botao-nova" to="/denuncias/nova">
+          + Nova denúncia
+        </Link>
       </div>
+
+      {semCidade && (
+        <p className="aviso-perfil">
+          Escolha a sua cidade no <Link to="/perfil">perfil</Link> para registrar e acompanhar denúncias.
+        </p>
+      )}
 
       {carregando && <p className="status-msg">Carregando...</p>}
       {erro && <p className="status-msg erro">{erro}</p>}
 
-      {!carregando && !erro && denuncias.length === 0 && (
-        <p className="status-msg">
-          {ehGestao
-            ? "Nenhuma denúncia registrada até o momento."
-            : "Você ainda não registrou nenhuma denúncia."}
-        </p>
+      {!carregando && !erro && !semCidade && denuncias.length === 0 && (
+        <p className="status-msg">Você ainda não registrou nenhuma denúncia.</p>
       )}
 
       <div className="denuncia-lista">
-        {denuncias.map((denuncia) => (
-          <article className="denuncia-item" key={denuncia.idDenuncia}>
-            <div className="denuncia-item-topo">
-              <span className="denuncia-categoria">{denuncia.categoria || "Sem categoria"}</span>
-              <span className={`denuncia-status-tag ${CORES_STATUS[denuncia.status] || "status-pendente"}`}>
-                {denuncia.status}
-              </span>
-            </div>
-            <p className="denuncia-descricao">{denuncia.descricao}</p>
-            <p className="denuncia-local">📍 {denuncia.localizacao}</p>
-            {ehGestao && denuncia.cidadao?.nome && (
-              <p className="denuncia-data">Enviada por {denuncia.cidadao.nome}</p>
-            )}
-            <p className="denuncia-data">
-              {new Date(denuncia.data).toLocaleDateString("pt-BR")}
-            </p>
-          </article>
-        ))}
+        {denuncias.map((denuncia) => {
+          const foto = urlImagem(denuncia);
+          return (
+            <article className={`denuncia-item ${foto ? "com-foto" : ""}`} key={denuncia.idDenuncia}>
+              {foto && <img className="denuncia-foto" src={foto} alt={`Foto da denúncia: ${denuncia.categoria || "problema"}`} />}
+
+              <div className="denuncia-corpo">
+                <div className="denuncia-item-topo">
+                  <span className="denuncia-categoria">{denuncia.categoria || "Sem categoria"}</span>
+                  <span className="denuncia-tags">
+                    {denuncia.prioridade && (
+                      <span className={`tag ${CLASSE_PRIORIDADE[denuncia.prioridade] || ""}`}>
+                        Prioridade {denuncia.prioridade.toLowerCase()}
+                      </span>
+                    )}
+                    <span className={`tag ${CLASSE_STATUS[denuncia.status] || ""}`}>{denuncia.status}</span>
+                  </span>
+                </div>
+
+                <p className="denuncia-descricao">{denuncia.descricao}</p>
+                <p className="denuncia-local">📍 {denuncia.localizacao}</p>
+                <p className="denuncia-data">
+                  {formatarData(denuncia.data)} · ♥ {denuncia.totalCurtidas}{" "}
+                  {denuncia.totalCurtidas === 1 ? "curtida" : "curtidas"}
+                </p>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </div>
   );

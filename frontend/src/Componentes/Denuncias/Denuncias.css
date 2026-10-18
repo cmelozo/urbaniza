@@ -1,0 +1,148 @@
+/* Estilos compartilhados entre o feed da cidade, "Minhas denúncias" e o painel da prefeitura */
+
+.tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.tag-nao-iniciada { background: #eceff6; color: #3d4864; }
+.tag-andamento { background: #fff4e0; color: #9a6300; }
+.tag-concluida { background: var(--sucesso-bg); color: var(--sucesso-texto); }
+
+.tag-prio-alta { background: var(--erro-bg); color: var(--erro-texto); }
+.tag-prio-media { background: #fff8d6; color: #7a5d00; }
+.tag-prio-baixa { background: #e3f5f1; color: #0f6657; }
+
+/* filtros em "pílulas" */
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.filtro {
+  border: 1px solid var(--borda);
+  background: #fff;
+  color: var(--texto-suave);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.filtro:hover {
+  border-color: var(--roxo-claro);
+  color: var(--roxo-escuro);
+}
+
+.filtro.ativo {
+  background: var(--roxo);
+  border-color: var(--roxo);
+  color: #fff;
+}
+
+.filtro:focus-visible,
+.curtir:focus-visible,
+.link-acao:focus-visible {
+  outline: 2px solid var(--roxo-claro);
+  outline-offset: 2px;
+}
+
+.filtro-contagem {
+  opacity: 0.75;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+/* cartão com foto (feed) */
+.denuncia-item.com-foto {
+  display: flex;
+  gap: 16px;
+}
+
+.denuncia-foto {
+  width: 112px;
+  height: 112px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #ece7f5;
+}
+
+.denuncia-corpo {
+  flex: 1;
+  min-width: 0;
+}
+
+.denuncia-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.denuncia-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.curtir {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--borda);
+  background: #fff;
+  color: var(--texto-suave);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.curtir:hover:not(:disabled) {
+  border-color: var(--rosa);
+  color: var(--rosa);
+}
+
+.curtir.curtiu {
+  background: #fdeefa;
+  border-color: var(--rosa);
+  color: #b0268f;
+}
+
+.curtir:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.aviso-perfil {
+  background: #fff4e0;
+  color: #7a4f00;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.aviso-perfil a {
+  font-weight: 700;
+}
+
+@media (max-width: 560px) {
+  .denuncia-item.com-foto {
+    flex-direction: column;
+  }
+
+  .denuncia-foto {
+    width: 100%;
+    height: 160px;
+  }
+}

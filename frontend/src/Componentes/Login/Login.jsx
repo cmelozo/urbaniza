@@ -33,7 +33,7 @@ function Login() {
         throw new Error(data.error || "Não foi possível entrar.");
       }
 
-      salvarUsuarioLogado(data.tipo, data.usuario);
+      salvarUsuarioLogado(data.tipo, data.usuario, data.token);
       navigate("/denuncias");
     } catch (error) {
       setErro(error.message);

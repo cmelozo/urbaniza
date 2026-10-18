@@ -1,9 +1,8 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { api } from "../../api";
 import { getUsuarioLogado } from "../../auth";
 import "./NovaDenuncia.css";
-
-const API_URL = "http://localhost:3000/Denuncias";
 
 function NovaDenuncia() {
   const navigate = useNavigate();
@@ -41,18 +40,9 @@ function NovaDenuncia() {
       formData.append("descricao", descricao);
       formData.append("localizacao", localizacao);
       formData.append("categoria", categoria);
-      formData.append("cidadaoId", sessao.usuario.idCidadao);
       if (foto) formData.append("foto", foto);
 
-      const response = await fetch(API_URL, {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Não foi possível enviar a denúncia.");
-      }
+      await api("/Denuncias", { method: "POST", formData });
 
       setMensagem("Denúncia enviada com sucesso!");
       setDescricao("");
@@ -62,7 +52,7 @@ function NovaDenuncia() {
       setPreviaFoto(null);
       if (inputFotoRef.current) inputFotoRef.current.value = "";
 
-      setTimeout(() => navigate("/denuncias"), 900);
+      setTimeout(() => navigate("/denuncias/minhas"), 900);
     } catch (error) {
       setErro(error.message);
     } finally {
@@ -73,6 +63,11 @@ function NovaDenuncia() {
   return (
     <div className="denuncia-page">
       <h1>Nova denúncia</h1>
+      {sessao?.usuario?.cidade && (
+        <p className="denuncia-cidade">
+          Enviando para a prefeitura de {sessao.usuario.cidade.nome} - {sessao.usuario.cidade.uf}
+        </p>
+      )}
 
       <form className="denuncia-form" onSubmit={handleSubmit}>
         <label>

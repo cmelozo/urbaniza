@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../Login/Login.css";
 
@@ -23,7 +23,7 @@ const PERFIS = {
   },
 };
 
-const FORM_VAZIO = { nome: "", email: "", senha: "", telefone: "", codigoAcesso: "" };
+const FORM_VAZIO = { nome: "", email: "", senha: "", telefone: "", codigoAcesso: "", cidadeId: "" };
 
 function Cadastro() {
   const navigate = useNavigate();
@@ -31,6 +31,15 @@ function Cadastro() {
   const [form, setForm] = useState(FORM_VAZIO);
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
+
+  const [cidades, setCidades] = useState([]);
+
+  useEffect(() => {
+    fetch(`${API_URL}/Cidades`)
+      .then((r) => r.json())
+      .then((lista) => Array.isArray(lista) && setCidades(lista))
+      .catch(() => setErro("Não foi possível carregar a lista de cidades."));
+  }, []);
 
   const config = PERFIS[perfil];
   const ehGestao = perfil === "gestao";
@@ -62,6 +71,7 @@ function Cadastro() {
           email: form.email,
           senha: form.senha,
           telefone: form.telefone,
+          cidadeId: form.cidadeId,
         };
 
     try {
@@ -148,6 +158,20 @@ function Cadastro() {
             </label>
           )}
 
+          {!ehGestao && (
+            <label>
+              Cidade onde você mora
+              <select name="cidadeId" value={form.cidadeId} onChange={handleChange} required>
+                <option value="">Selecione sua cidade</option>
+                {cidades.map((cidade) => (
+                  <option key={cidade.idCidade} value={cidade.idCidade}>
+                    {cidade.nome} - {cidade.uf}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
           <label>
             Senha
             <input
@@ -166,12 +190,15 @@ function Cadastro() {
               <input
                 type="password"
                 name="codigoAcesso"
-                placeholder="Fornecido pela prefeitura"
+                placeholder="Ex: URB-XXXX-XXXX-XXXX"
                 value={form.codigoAcesso}
                 onChange={handleChange}
                 autoComplete="off"
                 required
               />
+              <small className="campo-ajuda">
+                A cidade é definida pelo código. Ainda não tem um? Solicite à equipe da Urbaniza+.
+              </small>
             </label>
           )}
 
