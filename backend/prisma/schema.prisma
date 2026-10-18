@@ -6,14 +6,38 @@ datasource db {
   provider = "mysql"
 }
 
+// Município atendido pela plataforma. O "token" é o código de acesso que a
+// Urbaniza+ entrega (fora da plataforma) à prefeitura para ela fazer o cadastro.
+// "cadastrada" vira true quando a primeira conta de gestão da cidade é criada;
+// só cidades cadastradas recebem denúncias.
+model Cidade {
+  idCidade   Int     @id @default(autoincrement())
+  nome       String  @db.VarChar(100)
+  uf         String  @default("RN") @db.VarChar(2)
+  token      String  @unique @db.VarChar(40)
+  cadastrada Boolean @default(false)
+
+  cidadaos  Cidadao[]
+  gestores  Gestao[]
+  denuncias Denuncia[]
+
+  @@unique([nome, uf])
+  @@map("Cidade")
+}
+
 model Cidadao {
-  idCidadao Int    @id @default(autoincrement())
-  nome      String @db.VarChar(100)
-  email     String @unique @db.VarChar(100)
-  senha     String @db.VarChar(255)
+  idCidadao Int     @id @default(autoincrement())
+  nome      String  @db.VarChar(100)
+  email     String  @unique @db.VarChar(100)
+  senha     String  @db.VarChar(255)
   telefone  String? @db.VarChar(20)
 
+  // Opcional só para não quebrar contas criadas antes desta versão.
+  Cidade_idCidade Int?
+  cidade          Cidade? @relation(fields: [Cidade_idCidade], references: [idCidade])
+
   denuncias Denuncia[]
+  curtidas  Curtida[]
 
   @@map("Cidadao")
 }
@@ -23,6 +47,9 @@ model Gestao {
   nome     String @db.VarChar(100)
   email    String @unique @db.VarChar(100)
   senha    String @db.VarChar(255)
+
+  Cidade_idCidade Int?
+  cidade          Cidade? @relation(fields: [Cidade_idCidade], references: [idCidade])
 
   denuncias Denuncia[]
 
@@ -35,8 +62,10 @@ model Denuncia {
   categoria   String?  @db.VarChar(50)
   localizacao String   @db.VarChar(255)
   data        DateTime @default(now())
-  status      String   @default("Pendente") @db.VarChar(30)
-  prioridade  String?  @db.VarChar(20)
+  // Não iniciada | Em andamento | Concluída
+  status      String   @default("Não iniciada") @db.VarChar(30)
+  // Baixa | Média | Alta (emergência)
+  prioridade  String?  @default("Média") @db.VarChar(20)
   midia       Json?
 
   Cidadao_idCidadao Int
@@ -45,5 +74,25 @@ model Denuncia {
   Gestao_idGestao Int?
   gestao          Gestao? @relation(fields: [Gestao_idGestao], references: [idGestao])
 
+  Cidade_idCidade Int?
+  cidade          Cidade? @relation(fields: [Cidade_idCidade], references: [idCidade])
+
+  curtidas Curtida[]
+
+  @@index([Cidade_idCidade])
   @@map("Denuncia")
+}
+
+model Curtida {
+  idCurtida Int      @id @default(autoincrement())
+  criadaEm  DateTime @default(now())
+
+  Cidadao_idCidadao Int
+  cidadao           Cidadao  @relation(fields: [Cidadao_idCidadao], references: [idCidadao], onDelete: Cascade)
+
+  Denuncia_idDenuncia Int
+  denuncia            Denuncia @relation(fields: [Denuncia_idDenuncia], references: [idDenuncia], onDelete: Cascade)
+
+  @@unique([Cidadao_idCidadao, Denuncia_idDenuncia])
+  @@map("Curtida")
 }

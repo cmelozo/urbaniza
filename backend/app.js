@@ -8,6 +8,7 @@ var cidadaosRouter = require('./routes/Cidadaos');
 var denunciasRouter = require('./routes/Denuncias');
 var gestaoRouter = require('./routes/Gestao');
 var authRouter = require('./routes/Auth');
+var cidadesRouter = require('./routes/Cidades');
 
 var app = express();
 
@@ -18,7 +19,7 @@ app.use(cookieParser());
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
 
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
@@ -37,6 +38,7 @@ app.use('/login', authRouter);
 app.use('/Cidadaos', cidadaosRouter);
 app.use('/Denuncias', denunciasRouter);
 app.use('/Gestao', gestaoRouter);
+app.use('/Cidades', cidadesRouter);
 
 app.use(function (req, res, next) {
   next(createError(404));

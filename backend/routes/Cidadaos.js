@@ -1,7 +1,11 @@
 const express = require("express");
+const bcrypt = require("bcryptjs");
 const router = express.Router();
 
 const prisma = require("../prisma/client");
+const { autenticar, exigirTipo, gerarToken } = require("../middleware/auth");
+
+const incluirCidade = { cidade: { select: { idCidade: true, nome: true, uf: true, cadastrada: true } } };
 
 function semSenha(cidadao) {
   if (!cidadao) return cidadao;
@@ -9,22 +13,59 @@ function semSenha(cidadao) {
   return resto;
 }
 
-router.get("/", async function (req, res) {
+// Cadastro aberto: o cidadão escolhe a cidade onde mora.
+router.post("/", async function (req, res) {
   try {
-    const cidadaos = await prisma.cidadao.findMany();
-    res.status(200).json(cidadaos.map(semSenha));
+    const { nome, email, senha, telefone, cidadeId } = req.body;
+
+    if (!nome || !email || !senha || !cidadeId) {
+      return res.status(400).json({
+        error: "Nome, e-mail, senha e cidade são obrigatórios.",
+      });
+    }
+
+    const cidade = await prisma.cidade.findUnique({ where: { idCidade: Number(cidadeId) } });
+    if (!cidade) {
+      return res.status(400).json({ error: "Cidade inválida." });
+    }
+
+    const emailEmUso = await prisma.gestao.findUnique({ where: { email } });
+    if (emailEmUso) {
+      return res.status(409).json({ error: "Já existe uma conta com esse e-mail." });
+    }
+
+    const cidadao = await prisma.cidadao.create({
+      data: { nome, email, senha: await bcrypt.hash(senha, 10), telefone, Cidade_idCidade: cidade.idCidade },
+      include: incluirCidade,
+    });
+
+    res.status(201).json(semSenha(cidadao));
   } catch (error) {
-    console.error("Erro ao listar cidadãos:", error);
-    res.status(500).json({ error: "Falha ao listar cidadãos" });
+    console.error("Erro ao criar cidadão:", error?.message || error);
+
+    if (error.code === "P2002") {
+      return res.status(409).json({ error: "Já existe uma conta com esse e-mail." });
+    }
+
+    return res.status(500).json({ error: "Falha ao cadastrar cidadão" });
   }
+});
+
+// A partir daqui, cada cidadão só mexe na própria conta.
+router.use(autenticar, exigirTipo("cidadao"));
+
+router.use("/:id", function (req, res, next) {
+  if (Number(req.params.id) !== req.usuario.id) {
+    return res.status(403).json({ error: "Você só pode acessar a sua própria conta." });
+  }
+  next();
 });
 
 router.get("/:id", async function (req, res) {
   try {
-    const idCidadao = Number(req.params.id);
-
     const cidadao = await prisma.cidadao.findUnique({
-      where: { idCidadao },
+      where: { idCidadao: req.usuario.id },
+      include: incluirCidade,
     });
 
     if (!cidadao) {
@@ -38,57 +79,38 @@ router.get("/:id", async function (req, res) {
   }
 });
 
-router.post("/", async function (req, res) {
-  try {
-    const { nome, email, senha, telefone } = req.body;
-
-    if (!nome || !email || !senha) {
-      return res.status(400).json({
-        error: "Nome, e-mail e senha são obrigatórios.",
-      });
-    }
-
-    const emailEmUso = await prisma.gestao.findUnique({ where: { email } });
-    if (emailEmUso) {
-      return res.status(409).json({ error: "Já existe uma conta com esse e-mail." });
-    }
-
-    const cidadao = await prisma.cidadao.create({
-      data: { nome, email, senha, telefone },
-    });
-
-    res.status(201).json(semSenha(cidadao));
-  } catch (error) {
-    console.error("Erro ao criar cidadão:", error?.message || error);
-
-    if (error.code === "P2002") {
-      return res.status(409).json({ error: "Já existe uma conta com esse e-mail." });
-    }
-
-    return res.status(500).json({
-      error: "Falha ao cadastrar cidadão",
-      detail: error?.message || "Erro interno do banco de dados",
-    });
-  }
-});
-
+// Editar perfil. Devolve também um token novo, porque a cidade pode ter mudado
+// e ela define quais denúncias o cidadão enxerga.
 router.put("/:id", async function (req, res) {
   try {
-    const idCidadao = Number(req.params.id);
-    const { nome, email, senha, telefone } = req.body;
+    const { nome, email, senha, telefone, cidadeId } = req.body;
 
     const dadosAtualizados = {};
-    if (nome !== undefined) dadosAtualizados.nome = nome;
-    if (email !== undefined) dadosAtualizados.email = email;
-    if (senha) dadosAtualizados.senha = senha;
+    if (nome !== undefined) {
+      if (!String(nome).trim()) return res.status(400).json({ error: "O nome não pode ficar vazio." });
+      dadosAtualizados.nome = nome;
+    }
+    if (email !== undefined) {
+      const emailEmUso = await prisma.gestao.findUnique({ where: { email } });
+      if (emailEmUso) return res.status(409).json({ error: "Já existe uma conta com esse e-mail." });
+      dadosAtualizados.email = email;
+    }
+    if (senha) dadosAtualizados.senha = await bcrypt.hash(senha, 10);
     if (telefone !== undefined) dadosAtualizados.telefone = telefone;
+    if (cidadeId !== undefined) {
+      const cidade = await prisma.cidade.findUnique({ where: { idCidade: Number(cidadeId) } });
+      if (!cidade) return res.status(400).json({ error: "Cidade inválida." });
+      dadosAtualizados.Cidade_idCidade = cidade.idCidade;
+    }
 
-    const cidadaoAtualizado = await prisma.cidadao.update({
-      where: { idCidadao },
+    const cidadao = await prisma.cidadao.update({
+      where: { idCidadao: req.usuario.id },
       data: dadosAtualizados,
+      include: incluirCidade,
     });
 
-    res.status(200).json(semSenha(cidadaoAtualizado));
+    const token = gerarToken({ tipo: "cidadao", id: cidadao.idCidadao, cidadeId: cidadao.Cidade_idCidade });
+    res.status(200).json({ usuario: semSenha(cidadao), token });
   } catch (error) {
     console.error("Erro ao atualizar cidadão:", error);
 
@@ -105,13 +127,8 @@ router.put("/:id", async function (req, res) {
 
 router.delete("/:id", async function (req, res) {
   try {
-    const idCidadao = Number(req.params.id);
-
-    await prisma.cidadao.delete({
-      where: { idCidadao },
-    });
-
-    res.status(200).json({ message: "Cidadão excluído com sucesso" });
+    await prisma.cidadao.delete({ where: { idCidadao: req.usuario.id } });
+    res.status(200).json({ message: "Conta excluída com sucesso" });
   } catch (error) {
     console.error("Erro ao excluir cidadão:", error);
 
