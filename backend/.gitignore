@@ -2,4 +2,3 @@ node_modules/
 .env
 uploads/*
 !uploads/.gitkeep
-GESTAO_CODIGO=59173000
